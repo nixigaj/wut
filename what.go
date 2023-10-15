@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+
+	"github.com/nixigaj/go-default-route"
 )
 
 var apis = [...]string{
@@ -42,27 +44,25 @@ func getIpType(str string) ipType {
 	return ipv4
 }
 
-func getAddr() {
-	defaultRoute, err := net.DefaultRoute()
+func getAddr() (*net.TCPAddr, error) {
+	defaultRoute, err := defaultroute.DefaultRouteInterface()
 }
 
-func getInterfaceAddr(bind string, ipType ipType) (*net.TCPAddr, error) {
-	interf, err := net.InterfaceByName(bind)
-	if err != nil {
-		return nil, err
-	}
+func getInterfaceAddr(interf *net.Interface, ipType ipType) (*net.TCPAddr, error) {
 
 	addrs, err := interf.Addrs()
 	if err != nil {
 		return nil, err
 	}
 
-	if ipType
-	for addr := range addrs {
+	/*
+		if ipType
+		for addr := range addrs {
 
-	}
+		}
+	*/
 
-	return ip, nil
+	return addrs[0], nil
 }
 
 func getHttpClient(addr *net.TCPAddr) (*http.Client, error) {

@@ -20,3 +20,7 @@ go.work
 # Editors
 .idea/
 .vscode/
+
+# Executables
+what
+what.exe

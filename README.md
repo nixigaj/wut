@@ -1,3 +1,5 @@
+<img align="left" alt="" src="icon.svg" height="128" style="margin-right: 1rem"/>
+
 # `what`
 A fast and simple command-line tool to check your public IP address. It can also double a network connectivity checker.
 
@@ -22,3 +24,23 @@ A fast and simple command-line tool to check your public IP address. It can also
 - NetBSD
 - OpenBSD
 - Solaris
+
+## Install
+
+
+Since `what` is a standalone binary, it can be downloaded for the applicable platform from the [releases page](https://github.com/nixigaj/what/releases) and run from anywhere. To install it automatically to the command-line path, the command below can be run with elevated privileges.
+
+Darwin (macOS), FreeBSD, and Linux:
+
+```shell
+curl -sSL https://raw.githubusercontent.com/nixigaj/zerve/master/install.sh | sh
+```
+
+Windows:
+
+```powershell
+curl -s https://raw.githubusercontent.com/nixigaj/zerve/master/install.bat | cmd
+```
+
+## License
+All files in this repository are licensed under the [MIT License](LICENSE).
