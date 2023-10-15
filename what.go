@@ -9,7 +9,7 @@ import (
 	"github.com/nixigaj/go-default-route"
 )
 
-var apis = [...]string{
+var defaultAPIs = [...]string{
 	"ip.erix.dev",
 	"icanhazip.com",
 	"ipecho.net/plain",
