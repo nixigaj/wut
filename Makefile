@@ -14,5 +14,5 @@ run:
 clean:
 	@rm what
 
-install: build
+install:
 	@./install.sh

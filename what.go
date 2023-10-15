@@ -55,13 +55,6 @@ func getInterfaceAddr(interf *net.Interface, ipType ipType) (*net.TCPAddr, error
 		return nil, err
 	}
 
-	/*
-		if ipType
-		for addr := range addrs {
-
-		}
-	*/
-
 	return addrs[0], nil
 }
 

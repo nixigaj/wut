@@ -9,8 +9,8 @@ github.com/mdlayher/netlink v1.7.2 h1:/UtM3ofJap7Vl4QWCPDGXY8d3GIY2UGSDbK+QWmY8/
 github.com/mdlayher/netlink v1.7.2/go.mod h1:xraEF7uJbxLhc5fpHL4cPe221LI2bdttWlU+ZGLfQSw=
 github.com/mdlayher/socket v0.4.1 h1:eM9y2/jlbs1M615oshPQOHZzj6R6wMT7bX5NPiQvn2U=
 github.com/mdlayher/socket v0.4.1/go.mod h1:cAqeGjoufqdxWkD7DkpyS+wcefOtmu5OQ8KuoJGIReA=
-github.com/nixigaj/go-default-route v0.0.0-20231014221949-ea045ba44dea h1:Jj8b4EbDCU4rLyFcb9izUmjyC5jH4tjvyuzJjfs4c64=
-github.com/nixigaj/go-default-route v0.0.0-20231014221949-ea045ba44dea/go.mod h1:fvHmLvG5wkvd4TmD6Vs1DckR8lU9z/bmYoTop7KGZu4=
+github.com/nixigaj/go-default-route v0.0.0-20231015080038-8e4963c335f7 h1:u8No0pup/9vysQivLInwzTvLlx+lHIQDRpfsFaFsmME=
+github.com/nixigaj/go-default-route v0.0.0-20231015080038-8e4963c335f7/go.mod h1:fvHmLvG5wkvd4TmD6Vs1DckR8lU9z/bmYoTop7KGZu4=
 go4.org/mem v0.0.0-20220726221520-4f986261bf13 h1:CbZeCBZ0aZj8EfVgnqQcYZgf0lpZ3H9rmp5nkDTAst8=
 go4.org/mem v0.0.0-20220726221520-4f986261bf13/go.mod h1:reUoABIJ9ikfM5sgtSF3Wushcza7+WeD01VB9Lirh3g=
 golang.org/x/exp v0.0.0-20230725093048-515e97ebf090 h1:Di6/M8l0O2lCLc6VVRWhgCiApHV8MnQurBnFSHsQtNY=

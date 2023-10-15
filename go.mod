@@ -2,7 +2,7 @@ module github.com/nixigaj/what
 
 go 1.18
 
-require github.com/nixigaj/go-default-route v0.0.0-20231014221949-ea045ba44dea
+require github.com/nixigaj/go-default-route v0.0.0-20231015080038-8e4963c335f7
 
 require (
 	github.com/google/go-cmp v0.5.9 // indirect
