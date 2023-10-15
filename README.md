@@ -1,7 +1,7 @@
 <img align="left" alt="" src="icon.svg" height="128" style="margin-right: 1rem"/>
 
 # `what`
-A fast and simple command-line tool to check your public IP address. It can also double a network connectivity checker.
+A fast and simple command-line tool to check your public IP-address. It can also double a network connectivity checker.
 
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
