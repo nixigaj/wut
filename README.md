@@ -44,6 +44,49 @@ Windows:
 curl -s https://raw.githubusercontent.com/nixigaj/zerve/master/install.bat | cmd
 ```
 
+Prebuilt binaries are available for:
+
+| OS             | `386` | `amd64` | `arm` | `arm64` |
+|----------------|-------|---------|-------|---------|
+| Darwin (macOS) |       | ✅       |       | ✅       |
+| FreeBSD        | ✅     | ✅       | ✅     | ✅       |
+| Linux          | ✅     | ✅       | ✅     | ✅       |
+| Windows        | ✅     | ✅       |       | ✅       |
+
+If your platform is not in the list, you can try building it from source below.
+
+### Build from source
+#### Dependencies
+- Go 1.18 or higher
+- Git
+- Make (not required for Windows)
+
+#### Clone repository and enter it
+
+```shell
+git clone https://github.com/nixigaj/what.git
+cd what
+```
+
+#### Setup
+
+```shell
+make setup
+```
+
+#### Build
+
+```shell
+make
+```
+
+#### Install
+```shell
+make install
+```
+
+On Windows `make` can be replaced with `.\make.bat` in the commands.
+
 ## APIs
 
 By default `what` uses:

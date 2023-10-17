@@ -1,6 +1,15 @@
 package main
 
 import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("Hello what?")
+}
+
+/*
+import (
 	"context"
 	"fmt"
 	"net"
@@ -75,3 +84,4 @@ func getHttpClient(addr *net.TCPAddr) (*http.Client, error) {
 
 	return client, nil
 }
+*/
