@@ -8,10 +8,10 @@ It can also double a network connectivity checker.
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
 - **Simple** — Does one thing and does it well, with a minimal number of options.
 - **IPv4 and IPv6** — Does a pretty print of both by default but can print only the address with no white-space using the `-4` and `-6` flags.
-- **Specify interface or gateway** — Use a specific interface name or gateway IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen as gateway.
-- **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API only responds with the IP-address in plaintext, as only white-space is trimmed from the response.
+- **Specify interface or gateway** — Use a specific interface name or gateway IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen as gateway(s).
+- **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API responds with only the IP-address in plaintext, as only white-space is trimmed from the response.
 - **Print version** — Print the program version with the `--version` or `-v` flag(s).
-- **Print usage** — Print program usage with the `--help` or `-h` flag(s).
+- **Print usage** — Print program usage instructions with the `--help` or `-h` flag(s).
 
 ### Planned
 - **Optional curl backend** — Use [curl](https://curl.se) as backend for fetching the API(s) with the `--curl` or `-c` flag. This requires `curl` to be in the path.
