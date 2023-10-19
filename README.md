@@ -7,11 +7,13 @@ It can also double a network connectivity checker.
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
 - **Simple** — Does one thing and does it well, with a minimal number of options, in a single source file, using only the Go standard library.
-- **IPv4 and IPv6** — Does a pretty print of both by default but can print only the address with no white-space using the `-4`/`--ipv4` and `-6`/`--ipv6` flags.
-- **Specify interface or local IP** — Use a specific interface name or local IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen as gateway(s).
+- **IPv4 and IPv6** — Prints both by default but can print only one with the `-4`/`--ipv4` and `-6`/`--ipv6` flags.
+- **Short output** — Does a pretty print by default but can print only an address with no white-space using the `--short=[ipv4/ipv6]` or `-s=[4/6]` flags.
+- **Specify interface or local IP** — Use a specific interface name or local IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen local IP(s).
 - **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API responds with only the IP-address in plaintext, as only white-space is trimmed from the response. Unencrypted HTTP is used by default unless a protocol is specified, e.g. `https://`.
-- **Print version** — Print the program version with the `--version` or `-v` flag(s).
-- **Print usage** — Print program usage instructions with the `--help` or `-h` flag(s).
+- **Verbose error output** — Print verbose error output with the `--verbose` flag.
+- **Print version** — Print the program version with the `--version` or `-v` flag.
+- **Print usage** — Print program usage instructions with the `--help` or `-h` flag.
 
 ### Planned
 - **Optional curl backend** — Use [curl](https://curl.se) as backend for fetching the API(s) with the `--curl` or `-c` flag. This requires `curl` to be in the path.

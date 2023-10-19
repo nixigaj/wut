@@ -2,16 +2,20 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-var defaultAPIs = [...]string{
+var defaultAPIs = []string{
 	"https://ip.erix.dev",
 	"https://icanhazip.com",
 	"https://ipecho.net/plain",
@@ -19,81 +23,342 @@ var defaultAPIs = [...]string{
 	"https://api64.ipify.org",
 }
 
+const (
+	whatVersion      = "0.1.0"
+	clientTimeoutSec = 5
+)
+
+type bindType struct {
+	IP    ipType
+	iFace bool
+}
+
 type ipType int
 
 const (
 	ipv4 ipType = iota
 	ipv6
-	ipInvalid
+	ipUnset
 )
 
-func main() {
-	startTime := time.Now()
-
-	output := ""
-
-	ipv4Str, err := getIPString(ipv4, "")
-	if err != nil {
-		output += "IPv4: failed to get IPv4 address: " + err.Error() + "\n"
-	} else {
-		output += "IPv4: " + ipv4Str + "\n"
-	}
-
-	ipv6Str, err := getIPString(ipv6, "")
-	if err != nil {
-		output += "IPv6: failed to get IPv6 address: " + err.Error() + "\n"
-	} else {
-		output += "IPv6: " + ipv6Str + "\n"
-	}
-
-	endTime := time.Since(startTime)
-
-	output += "Query time: " + strconv.Itoa(int(endTime.Milliseconds())) + " ms"
-
-	fmt.Println(output)
+type ipStringResp struct {
+	IP  string
+	Err error
 }
 
-func getIPString(ipType ipType, bind string) (string, error) {
-	clients, err := getHTTPClients(ipType, bind)
+type options struct {
+	Bind       string
+	BindType   bindType
+	Short      ipType
+	VerboseErr bool
+	APIs       []string
+	PrintVer   bool
+	PrintUsage bool
+}
+
+func main() {
+	opt, err := getOptions()
+	if err != nil {
+		fmt.Println(err)
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if opt.PrintUsage {
+		flag.Usage()
+		os.Exit(0)
+	}
+
+	if opt.PrintVer {
+		fmt.Println("`what` version " + whatVersion)
+		os.Exit(0)
+	}
+
+	if opt.Short != ipUnset {
+		fmt.Print(getSingleOutput(opt.BindType, opt.Bind, opt.APIs, opt.VerboseErr))
+	} else {
+		fmt.Println(getPrettyOutput(opt.BindType, opt.Bind, opt.APIs, opt.VerboseErr))
+	}
+
+	os.Exit(0)
+}
+
+func getOptions() (options, error) {
+	opt := options{
+		Bind:       "",
+		Short:      ipUnset,
+		VerboseErr: true,
+		APIs:       defaultAPIs,
+		PrintVer:   false,
+		PrintUsage: false,
+	}
+	opt.BindType = getBindType(opt.Bind)
+
+	opt.BindType.IP = ipUnset
+
+	return opt, nil
+}
+
+func getPrettyOutput(bType bindType, bind string, apis []string, verboseErr bool) string {
+	var output string
+	var queryTime time.Duration
+	var wg sync.WaitGroup
+
+	queryStartTime := time.Now()
+
+	if bType.IP != ipUnset {
+		singleOut := getSingleOutput(bType, bind, apis, verboseErr)
+		queryTime = time.Since(queryStartTime)
+
+		output += getIPTypeStr(bType) + ": " + singleOut + "\n"
+	} else {
+		respChanV4 := make(chan ipStringResp)
+		respChanV6 := make(chan ipStringResp)
+
+		wg.Add(2)
+		go getIPString(respChanV4, apis, bindType{IP: ipv4, iFace: bType.iFace}, bind, &wg)
+		go getIPString(respChanV6, apis, bindType{IP: ipv6, iFace: bType.iFace}, bind, &wg)
+
+		respV4 := <-respChanV4
+		respV6 := <-respChanV6
+
+		queryTime = time.Since(queryStartTime)
+
+		close(respChanV4)
+		close(respChanV6)
+
+		output += "IPv4: "
+		if respV4.Err != nil {
+			output += "failed to get IPv4 address"
+			if verboseErr {
+				output += ": " + respV4.Err.Error()
+			}
+		} else {
+			output += respV4.IP
+		}
+		output += "\n"
+
+		output += "IPv6: "
+		if respV6.Err != nil {
+			output += "failed to get IPv6 address"
+			if verboseErr {
+				output += ": " + respV6.Err.Error()
+			}
+		} else {
+			output += respV6.IP
+		}
+		output += "\n"
+	}
+
+	output += "Query time: " + strconv.Itoa(int(queryTime.Milliseconds())) + " ms"
+
+	wg.Wait()
+
+	return output
+}
+
+func getIPTypeStr(bType bindType) string {
+	switch bType.IP {
+	case ipv4:
+		return "IPv4"
+	case ipv6:
+		return "IPv6"
+	default:
+		return "IP"
+	}
+}
+
+func trimSubnet(ipStr string) string {
+	slashPos := strings.Index(ipStr, "/")
+
+	if slashPos != -1 {
+		return (ipStr)[:slashPos]
+	}
+
+	return ipStr
+}
+
+func getInterfaceIP(bType bindType, ifaceName string) (string, error) {
+	iface, err := net.InterfaceByName(ifaceName)
 	if err != nil {
 		return "", err
 	}
 
-	resp, err := clients[0].Get(defaultAPIs[0])
+	addrs, err := iface.Addrs()
 	if err != nil {
 		return "", err
+	}
+
+	for _, addr := range addrs {
+		ipAddr := addr.(*net.IPNet).IP
+
+		switch bType.IP {
+		case ipv4:
+			if ipAddr.To4() != nil {
+				return trimSubnet(addr.String()), nil
+			}
+		case ipv6:
+			if ipAddr.To4() == nil {
+				return trimSubnet(addr.String()), nil
+			}
+		default:
+			return "", fmt.Errorf("invalid bind IP type")
+		}
+	}
+
+	return "", errors.New(
+		fmt.Sprintf("interface %s does not have an %s address\n", ifaceName, getIPTypeStr(bType)))
+}
+
+func getSingleOutput(bType bindType, bind string, apis []string, verboseErr bool) string {
+	respChan := make(chan ipStringResp)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go getIPString(respChan, apis, bType, bind, &wg)
+	resp := <-respChan
+	close(respChan)
+
+	if resp.Err != nil {
+		output := "failed to get " + getIPTypeStr(bType) + " address"
+		if verboseErr {
+			output += ": " + resp.Err.Error()
+		}
+		return output
+	}
+
+	wg.Wait()
+	return resp.IP
+}
+
+func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Context, api string, ipType ipType, wg *sync.WaitGroup) {
+	req, err := http.NewRequestWithContext(ctx, "GET", api, nil)
+	if err != nil {
+		respChan <- ipStringResp{"", err}
+		wg.Done()
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		respChan <- ipStringResp{"", err}
+		wg.Done()
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		respChan <- ipStringResp{
+			IP:  "",
+			Err: err,
+		}
+		wg.Done()
+		return
 	}
 
 	ipStr := strings.TrimSpace(string(body))
 
-	if getIpType(ipStr) != ipType {
-		return "", fmt.Errorf("response IP not correct")
+	if getBindType(ipStr).IP != ipType {
+		respChan <- ipStringResp{
+			IP:  "",
+			Err: fmt.Errorf("response IP not correct"),
+		}
+		wg.Done()
+		return
 	}
 
-	return ipStr, nil
+	respChan <- ipStringResp{
+		IP:  ipStr,
+		Err: nil,
+	}
+	wg.Done()
 }
 
-func getIpType(str string) ipType {
+func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind string, wg *sync.WaitGroup) {
+	var clientWG sync.WaitGroup
+
+	clients, err := getHTTPClients(len(apis), bType, bind)
+	if err != nil {
+		respChan <- ipStringResp{
+			IP:  "",
+			Err: err,
+		}
+		return
+	}
+
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	clientRespChan := make(chan ipStringResp)
+
+	for i, client := range clients {
+		clientWG.Add(1)
+		go fetchIP(clientRespChan, client, ctx, apis[i], bType.IP, &clientWG)
+	}
+
+	var errs []error
+	for range clients {
+		resp := <-clientRespChan
+		if resp.Err == nil {
+			respChan <- ipStringResp{
+				IP:  resp.IP,
+				Err: nil,
+			}
+			cancel()
+
+			clientWG.Wait() // This waits forever
+			close(clientRespChan)
+
+			wg.Done()
+			return
+		}
+		errs = append(errs, resp.Err)
+	}
+
+	cancel()
+
+	var errsString string
+	for i, err := range errs {
+		errsString += err.Error()
+
+		if i < len(errs)-1 {
+			errsString += ", "
+		}
+	}
+
+	respChan <- ipStringResp{
+		IP:  "",
+		Err: errors.New(errsString),
+	}
+
+	clientWG.Wait()
+	close(clientRespChan)
+
+	wg.Done()
+}
+
+func getBindType(str string) bindType {
+	if str == "" {
+		return bindType{ipUnset, false}
+	}
+
+	str = strings.Trim(str, "[]") // Trim for IPv6
 	ip := net.ParseIP(str)
+
 	if ip == nil {
-		return ipInvalid
+		return bindType{ipUnset, true}
 	}
 	if ip.To4() == nil {
-		return ipv6
+		return bindType{ipv6, false}
 	}
-	return ipv4
+	return bindType{ipv4, false}
 }
 
-func getHTTPClients(ipType ipType, bind string) ([]*http.Client, error) {
+func getHTTPClients(noClients int, bType bindType, bind string) ([]*http.Client, error) {
 	var clients []*http.Client
 
-	for range defaultAPIs {
-		client, err := getHTTPClient(ipType, bind)
+	for i := 0; i < noClients; i++ {
+		client, err := getHTTPClient(bType, bind)
 		if err != nil {
 			return nil, err
 		}
@@ -103,17 +368,17 @@ func getHTTPClients(ipType ipType, bind string) ([]*http.Client, error) {
 	return clients, nil
 }
 
-func getHTTPClient(ipType ipType, bind string) (*http.Client, error) {
+func getHTTPClient(bType bindType, bind string) (*http.Client, error) {
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: clientTimeoutSec * time.Second,
 	}
 	var transport *http.Transport
 
 	if bind == "" {
-		// Bind to default address with ipType
+		// Bind to default address with bindType
 
 		var network string
-		switch ipType {
+		switch bType.IP {
 		case ipv4:
 			network = "tcp4"
 		case ipv6:
@@ -122,7 +387,7 @@ func getHTTPClient(ipType ipType, bind string) (*http.Client, error) {
 			return nil, fmt.Errorf("invalid IP type")
 		}
 
-		transport = http.DefaultTransport.(*http.Transport).Clone() // Remove the 'var' keyword here
+		transport = http.DefaultTransport.(*http.Transport).Clone()
 
 		var dialer net.Dialer
 		transport.DialContext = func(ctx context.Context, _, addr string) (net.Conn, error) {
@@ -131,7 +396,23 @@ func getHTTPClient(ipType ipType, bind string) (*http.Client, error) {
 	} else {
 		// Bind to a specific address
 
-		addr, err := net.ResolveTCPAddr("tcp", bind)
+		var bindIP string
+		if bType.iFace {
+			var err error
+			bindIP, err = getInterfaceIP(bType, bind)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			bindIP = strings.Trim(bind, "[]") // Trim for IPv6
+		}
+
+		// Add braces if IPv6
+		if bType.IP == ipv6 {
+			bindIP = "[" + bindIP + "]"
+		}
+
+		addr, err := net.ResolveTCPAddr("tcp", bindIP+":0")
 		if err != nil {
 			return nil, err
 		}
