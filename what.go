@@ -12,11 +12,11 @@ import (
 )
 
 var defaultAPIs = [...]string{
-	"ip.erix.dev",
-	"icanhazip.com",
-	"ipecho.net/plain",
-	"ifconfig.me/ip",
-	"api64.ipify.org",
+	"https://ip.erix.dev",
+	"https://icanhazip.com",
+	"https://ipecho.net/plain",
+	"https://ifconfig.me/ip",
+	"https://api64.ipify.org",
 }
 
 type ipType int
@@ -59,7 +59,7 @@ func getIPString(ipType ipType, bind string) (string, error) {
 		return "", err
 	}
 
-	resp, err := clients[0].Get("https://" + defaultAPIs[0])
+	resp, err := clients[0].Get(defaultAPIs[0])
 	if err != nil {
 		return "", err
 	}
