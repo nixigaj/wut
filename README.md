@@ -41,7 +41,7 @@ Prebuilt binaries are available for:
 | Linux          | ✅     | ✅       | ✅     | ✅       |
 | Windows        | ✅     | ✅       |       | ✅       |
 
-If your platform is not in the list, you can try building it from source below.
+If your platform is not in the table, you can try building it from source below.
 
 ### Build from source
 #### Dependencies
