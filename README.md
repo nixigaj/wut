@@ -6,7 +6,7 @@ It can also double a network connectivity checker.
 
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
-- **Simple** — Does one thing and does it well, with a minimal number of options.
+- **Simple** — Does one thing and does it well, with a minimal number of options, in a single source file, using only the Go standard library.
 - **IPv4 and IPv6** — Does a pretty print of both by default but can print only the address with no white-space using the `-4`/`--ipv4` and `-6`/`--ipv6` flags.
 - **Specify interface or local IP** — Use a specific interface name or local IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen as gateway(s).
 - **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API responds with only the IP-address in plaintext, as only white-space is trimmed from the response.
@@ -15,18 +15,6 @@ It can also double a network connectivity checker.
 
 ### Planned
 - **Optional curl backend** — Use [curl](https://curl.se) as backend for fetching the API(s) with the `--curl` or `-c` flag. This requires `curl` to be in the path.
-
-## Platform support
-- Darwin (macOS)
-- FreeBSD
-- Linux
-- Windows
-
-### Planned
-- DragonFly BSD
-- NetBSD
-- OpenBSD
-- Solaris
 
 ## Install
 Since `what` is a standalone binary,
@@ -57,7 +45,7 @@ If your platform is not in the list, you can try building it from source below.
 
 ### Build from source
 #### Dependencies
-- Go 1.18 or higher
+- Go 1.16 or higher
 - Git
 - Make (not required for Windows)
 
