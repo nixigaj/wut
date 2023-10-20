@@ -66,13 +66,13 @@ make build
 ```
 
 #### Install
-
 Run this command with elevated privileges:
 
 ```shell
 make install
 ```
 
+#### Windows
 On Windows `make` can be replaced with `.\make.bat` in the commands.
 
 ## APIs
