@@ -92,7 +92,7 @@ func main() {
 // TODO: Implement flag parsing to options struct
 func getOptions() (options, error) {
 	opt := options{
-		Bind:       "2a0e:1c80:1337:1:10:0:52:85",
+		Bind:       "",
 		Short:      ipUnset,
 		VerboseErr: false,
 		APIs:       defaultAPIs,
