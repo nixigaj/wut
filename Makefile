@@ -3,10 +3,10 @@
 default: build-debug
 
 build:
-	go build -ldflags="-s -w" -o what *.go
+	go build -ldflags="-s -w" -o what
 
 build-debug:
-	go build -o what *.go
+	go build -o what
 
 run:
 	@./what

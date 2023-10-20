@@ -89,9 +89,10 @@ func main() {
 	os.Exit(0)
 }
 
+// TODO: Implement flag parsing to options struct
 func getOptions() (options, error) {
 	opt := options{
-		Bind:       "",
+		Bind:       "2a0e:1c80:1337:1:10:0:52:85",
 		Short:      ipUnset,
 		VerboseErr: false,
 		APIs:       defaultAPIs,
@@ -101,7 +102,7 @@ func getOptions() (options, error) {
 	}
 	opt.BindType = getBindType(opt.Bind)
 
-	opt.BindType.IP = ipUnset
+	//opt.BindType.IP = ipUnset
 
 	return opt, nil
 }
@@ -111,6 +112,7 @@ func getBindType(str string) bindType {
 		return bindType{ipUnset, false}
 	}
 
+	// TODO: This also accepts IPv4s with square brackets
 	str = strings.Trim(str, "[]") // Trim for IPv6
 	ip := net.ParseIP(str)
 
