@@ -58,12 +58,6 @@ git clone https://github.com/nixigaj/what.git
 cd what
 ```
 
-#### Setup
-
-```shell
-make setup
-```
-
 #### Build
 
 ```shell

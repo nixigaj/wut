@@ -24,8 +24,10 @@ var defaultAPIs = []string{
 }
 
 const (
-	whatVersion      = "0.1.0"
-	clientTimeoutSec = 5
+	whatVersion = "0.1.0"
+
+	// With multiple APIs, it is unlikely that the query will take longer than one second
+	clientTimeoutSec = 1
 )
 
 type bindType struct {
@@ -276,6 +278,7 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 			IP:  "",
 			Err: err,
 		}
+		wg.Done()
 		return
 	}
 
