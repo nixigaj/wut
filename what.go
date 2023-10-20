@@ -87,7 +87,7 @@ func getOptions() (options, error) {
 	opt := options{
 		Bind:       "",
 		Short:      ipUnset,
-		VerboseErr: true,
+		VerboseErr: false,
 		APIs:       defaultAPIs,
 		PrintVer:   false,
 		PrintUsage: false,
@@ -231,18 +231,16 @@ func getSingleOutput(bType bindType, bind string, apis []string, verboseErr bool
 	return resp.IP
 }
 
-func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Context, api string, ipType ipType, wg *sync.WaitGroup) {
+func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Context, api string, ipType ipType) {
 	req, err := http.NewRequestWithContext(ctx, "GET", api, nil)
 	if err != nil {
 		respChan <- ipStringResp{"", err}
-		wg.Done()
 		return
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
 		respChan <- ipStringResp{"", err}
-		wg.Done()
 		return
 	}
 
@@ -252,7 +250,6 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 			IP:  "",
 			Err: err,
 		}
-		wg.Done()
 		return
 	}
 
@@ -263,7 +260,6 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 			IP:  "",
 			Err: fmt.Errorf("response IP not correct"),
 		}
-		wg.Done()
 		return
 	}
 
@@ -271,12 +267,9 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 		IP:  ipStr,
 		Err: nil,
 	}
-	wg.Done()
 }
 
 func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind string, wg *sync.WaitGroup) {
-	var clientWG sync.WaitGroup
-
 	clients, err := getHTTPClients(len(apis), bType, bind)
 	if err != nil {
 		respChan <- ipStringResp{
@@ -292,30 +285,36 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 	clientRespChan := make(chan ipStringResp)
 
 	for i, client := range clients {
-		clientWG.Add(1)
-		go fetchIP(clientRespChan, client, ctx, apis[i], bType.IP, &clientWG)
+		go fetchIP(clientRespChan, client, ctx, apis[i], bType.IP)
 	}
 
 	var errs []error
+	success := false
 	for range clients {
 		resp := <-clientRespChan
+
+		if success {
+			continue
+		}
+
 		if resp.Err == nil {
+			success = true
 			respChan <- ipStringResp{
 				IP:  resp.IP,
 				Err: nil,
 			}
 			cancel()
-
-			clientWG.Wait() // This waits forever
-			close(clientRespChan)
-
-			wg.Done()
-			return
 		}
+
 		errs = append(errs, resp.Err)
 	}
-
+	close(clientRespChan)
 	cancel()
+
+	if success {
+		wg.Done()
+		return
+	}
 
 	var errsString string
 	for i, err := range errs {
@@ -330,9 +329,6 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 		IP:  "",
 		Err: errors.New(errsString),
 	}
-
-	clientWG.Wait()
-	close(clientRespChan)
 
 	wg.Done()
 }
@@ -418,7 +414,7 @@ func getHTTPClient(bType bindType, bind string) (*http.Client, error) {
 		}
 
 		dialer := &net.Dialer{LocalAddr: addr}
-		transport = &http.Transport{} // Initialize the transport
+		transport = &http.Transport{}
 		transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			conn, err := dialer.Dial(network, addr)
 			return conn, err
