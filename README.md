@@ -66,6 +66,9 @@ make build
 ```
 
 #### Install
+
+Run this command with elevated privileges:
+
 ```shell
 make install
 ```
