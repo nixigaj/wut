@@ -2,7 +2,7 @@
 
 # `what`
 A fast and simple command-line tool to check your public IP-address.
-It can also double a network connectivity checker.
+It can also double as a network connectivity checker.
 
 ## TODO (before v0.1.0)
 - Implement flag parsing and applicable error handling.
