@@ -87,11 +87,11 @@ On Windows `make` can be replaced with `.\make.bat` in the commands.
 
 By default `what` uses:
 
-- [api64.ipify.org](https://api64.ipify.org)
-- [icanhazip.com](https://icanhazip.com) ([this one is usually the first to respond](https://blog.apnic.net/2021/06/17/how-a-small-free-ip-tool-survived/))
-- [ifconfig.me/ip](https://ifconfig.me/ip)
-- [ip.erix.dev](https://ip.erix.dev) (my own service in Sweden)
-- [ipecho.net/plain](https://ipecho.net/plain)
+- [api64.ipify.org](http://api64.ipify.org)
+- [icanhazip.com](http://icanhazip.com) ([this one is usually the first to respond](https://blog.apnic.net/2021/06/17/how-a-small-free-ip-tool-survived/))
+- [ifconfig.me/ip](http://ifconfig.me/ip)
+- [ip.erix.dev:11313](http://ip.erix.dev:11313) ([my own service](server) in Sweden)
+- [ipecho.net/plain](http://ipecho.net/plain)
 
 ### Roll your own API with Nginx
 Simply use this directive and make sure that Nginx is not behind some type of reverse proxy:

@@ -16,11 +16,11 @@ import (
 )
 
 var defaultAPIs = []string{
-	"https://api64.ipify.org",
-	"https://icanhazip.com",
-	"https://ifconfig.me/ip",
-	"https://ip.erix.dev",
-	"https://ipecho.net/plain",
+	"http://api64.ipify.org",
+	"http://icanhazip.com",
+	"http://ifconfig.me/ip",
+	"http://ip.erix.dev",
+	"http://ipecho.net/plain",
 }
 
 const (
