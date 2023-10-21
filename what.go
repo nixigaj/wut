@@ -26,8 +26,8 @@ var defaultAPIs = []string{
 const (
 	whatVersion = "0.1.0-dev"
 
-	// With multiple APIs, it is unlikely that the query will take longer than one second
-	defaultClientTimeoutSec = 1
+	// With multiple APIs, it is unlikely that the query will take longer than three seconds
+	defaultClientTimeoutSec = 3
 )
 
 type ipType int
@@ -232,10 +232,16 @@ func getPrettyOutput(bType bindType, bind string, apis []string, verboseErr bool
 		}
 		output += "\n"
 
-		if respV4.QueryTime > respV6.QueryTime {
-			longestQueryTime = respV4.QueryTime
-		} else {
+		if respV4.Timeout == respV6.Timeout {
+			if respV4.QueryTime > respV6.QueryTime {
+				longestQueryTime = respV4.QueryTime
+			} else {
+				longestQueryTime = respV6.QueryTime
+			}
+		} else if respV4.Timeout {
 			longestQueryTime = respV6.QueryTime
+		} else {
+			longestQueryTime = respV4.QueryTime
 		}
 	}
 
