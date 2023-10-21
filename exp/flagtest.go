@@ -56,7 +56,7 @@ func getOptions() (options, error) {
 func checkOptionsConstraints(opts options) error {
 	// Example of constraints checking
 	if opts.Short != ipUnset && (opts.IpType != ipUnset || opts.VerboseErr || opts.TimeoutSec != 0) {
-		return fmt.Errorf("Short IP type can't be used with other flags")
+		return fmt.Errorf("short IP type can't be used with other flags")
 	}
 	if opts.IpType != ipUnset && (opts.Short != ipUnset || opts.VerboseErr || opts.TimeoutSec != 0) {
 		return fmt.Errorf("IP type can't be used with other flags")
