@@ -1,4 +1,4 @@
 @echo off
 
-REM TODO: Write Windows install script.
-echo TODO
+REM TODO: Write Windows installation script.
+echo TODO: Write Windows installation script

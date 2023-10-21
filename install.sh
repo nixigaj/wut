@@ -10,7 +10,8 @@ install_from_build() {
 }
 
 install_from_download() {
-	echo "TODO: Implement install from download"
+	# TODO: Implement installation from download
+	echo "TODO: Implement installation from download"
 }
 
 if [ "$(id -u)" -ne 0 ]; then

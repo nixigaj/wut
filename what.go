@@ -24,7 +24,7 @@ var defaultAPIs = []string{
 }
 
 const (
-	whatVersion = "0.1.0"
+	whatVersion = "0.1.0-dev"
 
 	// With multiple APIs, it is unlikely that the query will take longer than one second
 	defaultClientTimeoutSec = 1
@@ -47,6 +47,7 @@ type ipStringResp struct {
 	IP        string
 	QueryTime time.Duration
 	Err       error
+	Timeout   bool
 }
 
 type options struct {
@@ -102,7 +103,14 @@ func getOptions() (options, error) {
 	}
 	opt.BindType = getBindType(opt.Bind)
 
-	//opt.BindType.IP = ipUnset
+	if opt.BindType.IP == ipUnset {
+		switch os.Getenv("WHAT_DEFAULT_IP_VERSION") {
+		case "ipv4", "4":
+			opt.BindType.IP = ipv4
+		case "ipv6", "6":
+			opt.BindType.IP = ipv6
+		}
+	}
 
 	return opt, nil
 }
@@ -112,17 +120,29 @@ func getBindType(str string) bindType {
 		return bindType{ipUnset, false}
 	}
 
-	// TODO: This also accepts IPv4s with square brackets
-	str = strings.Trim(str, "[]") // Trim for IPv6
-	ip := net.ParseIP(str)
+	str = strings.TrimSpace(str)
 
-	if ip == nil {
-		return bindType{ipUnset, true}
-	}
-	if ip.To4() == nil {
+	// Detect if IPv4 or IPv6
+	ip := net.ParseIP(str)
+	if ip != nil {
+		if ip.To4() != nil {
+			return bindType{ipv4, false}
+		}
 		return bindType{ipv6, false}
 	}
-	return bindType{ipv4, false}
+
+	// Trim brackets and retry for IPv6
+	if str[0] == '[' && str[len(str)-1] == ']' {
+		str = str[1:]
+		str = str[:len(str)-1]
+	}
+	ip = net.ParseIP(str)
+	if ip != nil && ip.To4() == nil {
+		return bindType{ipv6, false}
+	}
+
+	// If all else fails, it is an interface
+	return bindType{ipUnset, true}
 }
 
 func getIPTypeStr(bType bindType) string {
@@ -147,6 +167,9 @@ func getSingleOutput(bType bindType, bind string, apis []string, verboseErr bool
 
 	if resp.Err != nil {
 		output := "failed to get " + getIPTypeStr(bType) + " address"
+		if resp.Timeout {
+			output += ": timeout"
+		}
 		if verboseErr {
 			output += ": " + resp.Err.Error()
 		}
@@ -184,6 +207,9 @@ func getPrettyOutput(bType bindType, bind string, apis []string, verboseErr bool
 		output += "IPv4: "
 		if respV4.Err != nil {
 			output += "failed to get IPv4 address"
+			if respV4.Timeout {
+				output += ": timeout"
+			}
 			if verboseErr {
 				output += ": " + respV4.Err.Error()
 			}
@@ -195,6 +221,9 @@ func getPrettyOutput(bType bindType, bind string, apis []string, verboseErr bool
 		output += "IPv6: "
 		if respV6.Err != nil {
 			output += "failed to get IPv6 address"
+			if respV6.Timeout {
+				output += ": timeout"
+			}
 			if verboseErr {
 				output += ": " + respV6.Err.Error()
 			}
@@ -224,6 +253,7 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 			IP:        "",
 			QueryTime: 0,
 			Err:       err,
+			Timeout:   false,
 		}
 		wg.Done()
 		return
@@ -241,6 +271,7 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 	var errs []error
 	success := false
 	longestQueryTime := time.Duration(0)
+	allTimeout := true
 	for range clients {
 		resp := <-clientRespChan
 
@@ -254,11 +285,15 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 				IP:        resp.IP,
 				QueryTime: resp.QueryTime,
 				Err:       nil,
+				Timeout:   false,
 			}
 			cancel()
 		}
 		if resp.QueryTime > longestQueryTime {
 			longestQueryTime = resp.QueryTime
+		}
+		if resp.Timeout == false {
+			allTimeout = false
 		}
 		errs = append(errs, resp.Err)
 	}
@@ -275,7 +310,7 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 		errsString += err.Error()
 
 		if i < len(errs)-1 {
-			errsString += ", "
+			errsString += " | "
 		}
 	}
 
@@ -283,6 +318,7 @@ func getIPString(respChan chan ipStringResp, apis []string, bType bindType, bind
 		IP:        "",
 		QueryTime: longestQueryTime,
 		Err:       errors.New(errsString),
+		Timeout:   allTimeout,
 	}
 
 	wg.Done()
@@ -409,7 +445,7 @@ func trimSubnet(ipStr string) string {
 func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Context, api string, ipType ipType) {
 	req, err := http.NewRequestWithContext(ctx, "GET", api, nil)
 	if err != nil {
-		respChan <- ipStringResp{"", 0, err}
+		respChan <- ipStringResp{"", 0, err, false}
 		return
 	}
 
@@ -417,13 +453,19 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 	resp, err := client.Do(req)
 	queryTime := time.Since(queryStartTime)
 	if err != nil {
-		respChan <- ipStringResp{"", queryTime, err}
+		netErr, ok := err.(net.Error)
+		respChan <- ipStringResp{
+			IP:        "",
+			QueryTime: queryTime,
+			Err:       err,
+			Timeout:   ok && netErr.Timeout(),
+		}
 		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		respChan <- ipStringResp{"", queryTime, err}
+		respChan <- ipStringResp{"", queryTime, err, false}
 		return
 	}
 
@@ -434,6 +476,7 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 			IP:        "",
 			QueryTime: queryTime,
 			Err:       fmt.Errorf("response IP not correct"),
+			Timeout:   false,
 		}
 		return
 	}
@@ -442,5 +485,6 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 		IP:        ipStr,
 		QueryTime: queryTime,
 		Err:       nil,
+		Timeout:   false,
 	}
 }

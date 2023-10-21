@@ -4,11 +4,19 @@
 A fast and simple command-line tool to check your public IP-address.
 It can also double a network connectivity checker.
 
+## TODO (before v0.1.0)
+- Implement flag parsing and applicable error handling.
+- Refactor code where needed to be up to pragmatic Go standards (including adding necessary code comments).
+- Do a GitHub test release using the [Go Release Binaries](https://github.com/marketplace/actions/go-release-binaries) plugin.
+- Implement installation from download in the POSIX-compatible installation script.
+- Write a Windows installation script, including support for detecting local build.
+- Manually test and double-check everything.
+
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
 - **Simple** — Does one thing and does it well, with a minimal number of options, in a single source file, using only the Go standard library.
-- **IPv4 and IPv6** — Prints both by default but can print only one with the `-4`/`--ipv4` and `-6`/`--ipv6` flags.
-- **Short output** — Does a pretty print by default but can print only an address with no white-space using the `--short [ipv4/ipv6]` or `-s [4/6]` flags.
+- **IPv4 and IPv6** — Prints both by default but can print only one with the `--ipv4`/`-4` and `--ipv6`/`-6` flags. The default behaviour can be changed to a specific version by setting the `WHAT_DEFAULT_IP_VERSION` environment variable to `ipv4`/`4` or `ipv6`/`6`. To print both versions with the environment variable set use the `--both` or `-b` flag.
+- **Short output** — Does a pretty print by default but can print only an address with no white-space using the `--short [ipv4/ipv6]` or `-s [4/6]` flag.
 - **Specify interface or local IP** — Use a specific interface name or local IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen local IP(s).
 - **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API responds with only the IP-address in plaintext, as only white-space is trimmed from the response. Unencrypted HTTP is used by default unless a protocol is specified, e.g. `https://`.
 - **Custom timeout** — Use a custom API fetch timeout in seconds with the `--timeout` or `-t` flag. By default, the timeout is one second.
