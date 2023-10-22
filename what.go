@@ -90,8 +90,132 @@ func main() {
 	os.Exit(0)
 }
 
+// Options parsing ↓
+
+func (i *v4flag) String() string { return "" }
+func (i *v4flag) Set(value string) error {
+	if value != "" {
+		return fmt.Errorf("value provided to boolean flag")
+	}
+	if *i {
+		return fmt.Errorf("IPv4 flag set multiple times")
+	}
+	if args.V6 {
+		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
+	}
+	if args.Both {
+		return fmt.Errorf("contradicting IP versions: `both` flag already set")
+	}
+	if ipType(args.Short) != ipUnset {
+		return fmt.Errorf("contradicting IP versions: `short` flag already set")
+	}
+	*i = true
+	return nil
+}
+
+func (i *v6flag) String() string { return "" }
+func (i *v6flag) Set(value string) error {
+	if value != "" {
+		return fmt.Errorf("value provided to boolean flag")
+	}
+	if *i {
+		return fmt.Errorf("IPv6 flag set multiple times")
+	}
+	if args.V4 {
+		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
+	}
+	if args.Both {
+		return fmt.Errorf("contradicting IP versions: `both` flag already set")
+	}
+	if ipType(args.Short) != ipUnset {
+		return fmt.Errorf("contradicting IP versions: `short` flag already set")
+	}
+	*i = true
+	return nil
+}
+
+func (i *vBothFlag) String() string { return "" }
+func (i *vBothFlag) Set(value string) error {
+	if value != "" {
+		return fmt.Errorf("value provided to boolean flag")
+	}
+	if *i {
+		return fmt.Errorf("`both` flag set multiple times")
+	}
+	if args.V4 {
+		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
+	}
+	if args.V6 {
+		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
+	}
+	if args.Both {
+		return fmt.Errorf("contradicting IP versions: `both` flag already set")
+	}
+	if ipType(args.Short) != ipUnset {
+		return fmt.Errorf("contradicting IP versions: `short` flag already set")
+	}
+	*i = true
+	return nil
+}
+
+func (i *shortOutFlag) String() string { return "" }
+func (i *shortOutFlag) Set(value string) error {
+	if ipType(*i) != ipUnset {
+		return fmt.Errorf("`short` flag set multiple times")
+	}
+	if args.V4 {
+		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
+	}
+	if args.V6 {
+		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
+	}
+	if args.Both {
+		return fmt.Errorf("contradicting IP versions: `both` flag already set")
+	}
+	switch value {
+	case "ipv4", "4":
+		*i = shortOutFlag(ipv4)
+	case "ipv6", "6":
+		*i = shortOutFlag(ipv6)
+	default:
+		return fmt.Errorf("incorrect argument. valid values are `ipv4`, `4`, `ipv6`, `6`")
+	}
+	return nil
+}
+
+func (i *bindFlag) String() string { return string(*i) }
+func (i *bindFlag) Set(value string) error {
+	if *i != "" {
+		return fmt.Errorf("argument provided multiple times")
+	}
+	*i = bindFlag(value)
+	return nil
+}
+
+type v4flag bool
+type v6flag bool
+type vBothFlag bool
+type shortOutFlag ipType
+type bindFlag string
+
+type flags struct {
+	V4    v4flag
+	V6    v6flag
+	Both  vBothFlag
+	Short shortOutFlag
+	Bind  bindFlag
+}
+
+var args flags = flags{
+	Short: shortOutFlag(ipUnset),
+}
+
 // TODO: Implement flag parsing to options struct
 func getOptions() (options, error) {
+	flag.Var(&args.V4, "ipv4", "enable ipv4")
+	flag.Var(&args.Bind, "interface", "address or interface to bind to")
+	flag.Var(&args.Bind, "i", "address or interface to bind to")
+
 	opt := options{
 		Bind:       "",
 		Short:      ipUnset,
@@ -103,7 +227,7 @@ func getOptions() (options, error) {
 	}
 	opt.BindType = getBindType(opt.Bind)
 
-	if opt.BindType.IP == ipUnset {
+	if opt.BindType.IP == ipUnset && !args.Both {
 		switch os.Getenv("WHAT_DEFAULT_IP_VERSION") {
 		case "ipv4", "4":
 			opt.BindType.IP = ipv4
@@ -114,6 +238,8 @@ func getOptions() (options, error) {
 
 	return opt, nil
 }
+
+// ↑
 
 func getBindType(str string) bindType {
 	if str == "" {
