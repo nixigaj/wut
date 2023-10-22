@@ -1,27 +1,34 @@
 # `what` server
-This is a super simple HTTP server made for one thing, and one thing only: echoing your public IP-address as fast as possible. It is written in Rust using [may_minihttp](https://github.com/Xudong-Huang/may_minihttp). I use it for [ip.erix.dev:11313](http://ip.erix.dev:11313).
+This is a super simple HTTP(/2) server written in Rust,
+made for one thing, and one thing only: echoing your public IP-address as fast as possible.
+I use it for [ip.erix.dev:11313](http://ip.erix.dev:11313).
 
-## [wrk](https://github.com/wg/wrk) benchmarks
+## Non-scientific comparison with Nginx
+
+The tool used for the benchmark is [wrk](https://github.com/wg/wrk).
+
 ### Nginx
 ```
-Running 10s test @ http://ip.erix.dev/
+Running 10s test @ https://ip.erix.dev/
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    17.59ms   39.34ms 328.41ms   94.63%
-    Req/Sec   546.21    148.36     1.08k    85.42%
-  10527 requests in 10.01s, 4.17MB read
-Requests/sec:   1051.29
-Transfer/sec:    426.06KB
+    Latency    19.91ms   54.03ms 460.43ms   95.32%
+    Req/Sec   544.61    143.72     1.35k    88.66%
+  10532 requests in 10.00s, 4.47MB read
+Requests/sec:   1052.92
+Transfer/sec:    457.56KB
 ```
 
 ### `what` server
 ```
-Running 10s test @ http://ip.erix.dev:11313/
+Running 10s test @ https://ip.erix.dev:11313/
   2 threads and 10 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    12.12ms   33.68ms 310.40ms   93.32%
-    Req/Sec     1.25k   295.07     1.49k    84.21%
-  24149 requests in 10.01s, 9.56MB read
-Requests/sec:   2413.43
-Transfer/sec:      0.96MB
+    Latency    10.22ms   29.15ms 268.85ms   94.84%
+    Req/Sec     1.25k   288.35     1.51k    87.76%
+  24411 requests in 10.00s, 3.35MB read
+Requests/sec:   2440.28
+Transfer/sec:    343.16KB
 ```
+
+`what` server has a lower transfer/sec, even though it has a higher requests/sec, because it sends less stuff in the response headers per request.
