@@ -1,6 +1,6 @@
 # `what` server
 This is a super simple HTTP(/2) server written in Rust,
-made for one thing, and one thing only: echoing your public IP-address as fast as possible.
+made for one thing, and one thing only: securely echoing your public IP-address as fast as possible.
 I use it for [ip.erix.dev:11313](http://ip.erix.dev:11313).
 
 ## Non-scientific comparison with Nginx

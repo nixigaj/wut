@@ -10,7 +10,7 @@ It can also double as a network connectivity checker.
 - Do a GitHub test release using the [Go Release Binaries](https://github.com/marketplace/actions/go-release-binaries) plugin.
 - Implement installation from download in the POSIX-compatible installation script.
 - Write a Windows installation script, including support for detecting local build.
-- Manually test and double-check everything.
+- Manually test and double-check everything (including FreeBSD).
 
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
