@@ -102,6 +102,8 @@ location / {
 }
 ```
 
+If you're feeling brave, you can also try the Rust-based server in [`server/`](server) that I use for [ip.erix.dev:11313](https://ip.erix.dev:11313).
+
 ## License
 All files in this repository are licensed under the [MIT License](LICENSE).
 
