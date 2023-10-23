@@ -24,7 +24,7 @@ var defaultAPIs = []string{
 }
 
 const (
-	whatVersion = "0.1.0-dev"
+	whatVersion = "0.1.0"
 
 	// With multiple APIs, it is unlikely that the query will take longer than three seconds
 	defaultClientTimeoutSec = 3
@@ -64,7 +64,7 @@ type options struct {
 func main() {
 	opt, err := getOptions()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Options error:", err)
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -90,142 +90,145 @@ func main() {
 	os.Exit(0)
 }
 
-// Options parsing ↓
+// Flag parsing ↓
 
-func (i *v4flag) String() string { return "" }
-func (i *v4flag) Set(value string) error {
-	if value != "" {
-		return fmt.Errorf("value provided to boolean flag")
+type singleFlag string
+
+func (flag *singleFlag) String() string { return string(*flag) }
+
+func (flag *singleFlag) Set(value string) error {
+	if *flag != "" {
+		return fmt.Errorf("option provided multiple times")
 	}
-	if *i {
-		return fmt.Errorf("IPv4 flag set multiple times")
+	if value == "" {
+		return fmt.Errorf("option requires argument")
 	}
-	if args.V6 {
-		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
-	}
-	if args.Both {
-		return fmt.Errorf("contradicting IP versions: `both` flag already set")
-	}
-	if ipType(args.Short) != ipUnset {
-		return fmt.Errorf("contradicting IP versions: `short` flag already set")
-	}
-	*i = true
+	*flag = singleFlag(value)
 	return nil
 }
 
-func (i *v6flag) String() string { return "" }
-func (i *v6flag) Set(value string) error {
-	if value != "" {
-		return fmt.Errorf("value provided to boolean flag")
+type sliceFlag []string
+
+func (flag *sliceFlag) Strings() []string { return *flag }
+
+func (flag *sliceFlag) String() string { return "" }
+
+func (flag *sliceFlag) Set(value string) error {
+	if value == "" {
+		return fmt.Errorf("option requires argument")
 	}
-	if *i {
-		return fmt.Errorf("IPv6 flag set multiple times")
-	}
-	if args.V4 {
-		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
-	}
-	if args.Both {
-		return fmt.Errorf("contradicting IP versions: `both` flag already set")
-	}
-	if ipType(args.Short) != ipUnset {
-		return fmt.Errorf("contradicting IP versions: `short` flag already set")
-	}
-	*i = true
+	*flag = append(*flag, value)
 	return nil
 }
-
-func (i *vBothFlag) String() string { return "" }
-func (i *vBothFlag) Set(value string) error {
-	if value != "" {
-		return fmt.Errorf("value provided to boolean flag")
-	}
-	if *i {
-		return fmt.Errorf("`both` flag set multiple times")
-	}
-	if args.V4 {
-		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
-	}
-	if args.V6 {
-		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
-	}
-	if args.Both {
-		return fmt.Errorf("contradicting IP versions: `both` flag already set")
-	}
-	if ipType(args.Short) != ipUnset {
-		return fmt.Errorf("contradicting IP versions: `short` flag already set")
-	}
-	*i = true
-	return nil
-}
-
-func (i *shortOutFlag) String() string { return "" }
-func (i *shortOutFlag) Set(value string) error {
-	if ipType(*i) != ipUnset {
-		return fmt.Errorf("`short` flag set multiple times")
-	}
-	if args.V4 {
-		return fmt.Errorf("contradicting IP versions: IPv4 flag already set")
-	}
-	if args.V6 {
-		return fmt.Errorf("contradicting IP versions: IPv6 flag already set")
-	}
-	if args.Both {
-		return fmt.Errorf("contradicting IP versions: `both` flag already set")
-	}
-	switch value {
-	case "ipv4", "4":
-		*i = shortOutFlag(ipv4)
-	case "ipv6", "6":
-		*i = shortOutFlag(ipv6)
-	default:
-		return fmt.Errorf("incorrect argument. valid values are `ipv4`, `4`, `ipv6`, `6`")
-	}
-	return nil
-}
-
-func (i *bindFlag) String() string { return string(*i) }
-func (i *bindFlag) Set(value string) error {
-	if *i != "" {
-		return fmt.Errorf("argument provided multiple times")
-	}
-	*i = bindFlag(value)
-	return nil
-}
-
-type v4flag bool
-type v6flag bool
-type vBothFlag bool
-type shortOutFlag ipType
-type bindFlag string
 
 type flags struct {
-	V4    v4flag
-	V6    v6flag
-	Both  vBothFlag
-	Short shortOutFlag
-	Bind  bindFlag
-}
-
-var args flags = flags{
-	Short: shortOutFlag(ipUnset),
+	V4      bool
+	V6      bool
+	Both    bool
+	Short   singleFlag
+	Bind    singleFlag
+	APIs    sliceFlag
+	Timeout singleFlag
+	Verbose bool
+	Version bool
+	Help    bool
 }
 
 // TODO: Implement flag parsing to options struct
 func getOptions() (options, error) {
-	flag.Var(&args.V4, "ipv4", "enable ipv4")
+	args := flags{}
+
+	flag.BoolVar(&args.V4, "ipv4", false, "use IPv4")
+	flag.BoolVar(&args.V4, "4", false, "use IPv4")
+	flag.BoolVar(&args.V6, "ipv6", false, "use IPv6")
+	flag.BoolVar(&args.V6, "6", false, "use IPv6")
+	flag.BoolVar(&args.Both, "both", false, "use both IPv4 and IPv6")
+	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6")
+	flag.Var(&args.Short, "short", "address or interface to bind to")
+	flag.Var(&args.Short, "s", "address or interface to bind to")
 	flag.Var(&args.Bind, "interface", "address or interface to bind to")
 	flag.Var(&args.Bind, "i", "address or interface to bind to")
+	flag.Var(&args.APIs, "api", "provide an API to bind to (can be used multiple times)")
+	flag.Var(&args.APIs, "a", "provide an API to bind to (can be used multiple times)")
+	flag.Var(&args.Timeout, "timeout", "provide a API fetch timeout in seconds")
+	flag.Var(&args.Timeout, "t", "provide a API fetch timeout in seconds")
+	flag.BoolVar(&args.Verbose, "verbose", false, "print full error output")
+	flag.BoolVar(&args.Version, "version", false, "print `what` version")
+	flag.BoolVar(&args.Version, "v", false, "print `what` version")
+	flag.BoolVar(&args.Help, "help", false, "print usage help")
+	flag.BoolVar(&args.Help, "h", false, "print usage help")
+
+	flag.Parse()
 
 	opt := options{
-		Bind:       "",
+		Bind:       args.Bind.String(),
+		BindType:   getBindType(args.Bind.String()),
 		Short:      ipUnset,
-		VerboseErr: false,
-		APIs:       defaultAPIs,
-		Timeout:    defaultClientTimeoutSec * time.Second,
-		PrintVer:   false,
-		PrintUsage: false,
+		VerboseErr: args.Verbose,
+		PrintVer:   args.Version,
+		PrintUsage: args.Help,
 	}
-	opt.BindType = getBindType(opt.Bind)
+
+	ipConflictCount := -1
+	if args.V4 {
+		if opt.BindType.IP == ipv6 {
+			return options{}, fmt.Errorf("conflicting IP versions")
+		}
+		opt.BindType.IP = ipv4
+		ipConflictCount++
+	}
+	if args.V6 {
+		if opt.BindType.IP == ipv4 {
+			return options{}, fmt.Errorf("conflicting IP versions")
+		}
+		opt.BindType.IP = ipv6
+		ipConflictCount++
+	}
+	if args.Both {
+		ipConflictCount++
+	}
+	switch args.Short {
+	case "ipv4", "4":
+		if opt.BindType.IP == ipv6 {
+			return options{}, fmt.Errorf("conflicting IP versions")
+		}
+		opt.Short = ipv4
+		ipConflictCount++
+	case "ipv6", "6":
+		if opt.BindType.IP == ipv4 {
+			return options{}, fmt.Errorf("conflicting IP versions")
+		}
+		opt.Short = ipv6
+		ipConflictCount++
+	case "":
+		break
+	default:
+		return options{}, fmt.Errorf("`short` option requires argument of `ipv4`/`4`/`ipv6`/`6`")
+	}
+	if ipConflictCount > 0 {
+		return options{}, fmt.Errorf("conflicting IP versions")
+	}
+
+	if len(args.APIs.Strings()) > 0 {
+		for i, api := range args.APIs {
+			if !strings.HasPrefix(api, "http://") && !strings.HasPrefix(api, "https://") {
+				args.APIs[i] = "http://" + api
+			}
+		}
+		opt.APIs = args.APIs
+	} else {
+		opt.APIs = defaultAPIs
+	}
+
+	if args.Timeout.String() != "" {
+		timeout, err := strconv.ParseInt(args.Timeout.String(), 10, 64)
+		if err != nil {
+			return options{}, fmt.Errorf("`timeout` argument not an integer")
+		}
+		opt.Timeout = time.Duration(timeout) * time.Second
+	} else {
+		opt.Timeout = defaultClientTimeoutSec * time.Second
+	}
 
 	if opt.BindType.IP == ipUnset && !args.Both {
 		switch os.Getenv("WHAT_DEFAULT_IP_VERSION") {
