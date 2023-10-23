@@ -134,7 +134,6 @@ type flags struct {
 	Help    bool
 }
 
-// TODO: Implement flag parsing to options struct
 func getOptions() (options, error) {
 	args := flags{}
 
@@ -159,6 +158,10 @@ func getOptions() (options, error) {
 	flag.BoolVar(&args.Help, "h", false, "print usage help")
 
 	flag.Parse()
+
+	if flag.NArg() > 0 {
+		return options{}, fmt.Errorf("non-flag arguments are not allowed")
+	}
 
 	opt := options{
 		Bind:       args.Bind.String(),
@@ -224,6 +227,9 @@ func getOptions() (options, error) {
 		timeout, err := strconv.ParseInt(args.Timeout.String(), 10, 64)
 		if err != nil {
 			return options{}, fmt.Errorf("`timeout` argument not an integer")
+		}
+		if timeout < 1 {
+			return options{}, fmt.Errorf("`timeout` must be greater than or equal to 1")
 		}
 		opt.Timeout = time.Duration(timeout) * time.Second
 	} else {
