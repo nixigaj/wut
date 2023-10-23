@@ -5,7 +5,6 @@ A fast and simple command-line tool to check your public IP-address.
 It can also double as a network connectivity checker.
 
 ## TODO (before v0.1.0)
-- Implement flag parsing and applicable error handling (and then remove [`exp/`](exp) folder).
 - Refactor code where needed to be up to pragmatic Go standards (including adding necessary code comments).
 - Do a GitHub test release using the [Go Release Binaries](https://github.com/marketplace/actions/go-release-binaries) plugin.
 - Implement installation from download in the POSIX-compatible installation script.
