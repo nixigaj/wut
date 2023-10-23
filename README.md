@@ -24,9 +24,6 @@ It can also double as a network connectivity checker.
 - **Print version** — Print the program version with the `--version` or `-v` flag.
 - **Print usage** — Print program usage instructions with the `--help` or `-h` flag.
 
-### Planned
-- **Optional curl backend** — Use [curl](https://curl.se) as backend for fetching the API(s) with the `--curl` or `-c` flag. This requires `curl` to be in the path.
-
 ## Install
 Since `what` is a standalone binary,
 it can be downloaded for the applicable platform from the [releases page](https://github.com/nixigaj/what/releases)
