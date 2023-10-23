@@ -137,25 +137,26 @@ type flags struct {
 func getOptions() (options, error) {
 	args := flags{}
 
+	const shorthand = " (shorthand)"
 	flag.BoolVar(&args.V4, "ipv4", false, "use IPv4")
-	flag.BoolVar(&args.V4, "4", false, "use IPv4")
+	flag.BoolVar(&args.V4, "4", false, "use IPv4"+shorthand)
 	flag.BoolVar(&args.V6, "ipv6", false, "use IPv6")
-	flag.BoolVar(&args.V6, "6", false, "use IPv6")
+	flag.BoolVar(&args.V6, "6", false, "use IPv6"+shorthand)
 	flag.BoolVar(&args.Both, "both", false, "use both IPv4 and IPv6")
-	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6")
+	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6"+shorthand)
 	flag.Var(&args.Short, "short", "address or interface to bind to")
-	flag.Var(&args.Short, "s", "address or interface to bind to")
+	flag.Var(&args.Short, "s", "address or interface to bind to"+shorthand)
 	flag.Var(&args.Bind, "interface", "address or interface to bind to")
-	flag.Var(&args.Bind, "i", "address or interface to bind to")
+	flag.Var(&args.Bind, "i", "address or interface to bind to"+shorthand)
 	flag.Var(&args.APIs, "api", "provide an API to bind to (can be used multiple times)")
-	flag.Var(&args.APIs, "a", "provide an API to bind to (can be used multiple times)")
+	flag.Var(&args.APIs, "a", "provide an API to bind to (can be used multiple times)"+shorthand)
 	flag.Var(&args.Timeout, "timeout", "provide a API fetch timeout in seconds")
-	flag.Var(&args.Timeout, "t", "provide a API fetch timeout in seconds")
+	flag.Var(&args.Timeout, "t", "provide a API fetch timeout in seconds"+shorthand)
 	flag.BoolVar(&args.Verbose, "verbose", false, "print full error output")
 	flag.BoolVar(&args.Version, "version", false, "print `what` version")
-	flag.BoolVar(&args.Version, "v", false, "print `what` version")
+	flag.BoolVar(&args.Version, "v", false, "print `what` version"+shorthand)
 	flag.BoolVar(&args.Help, "help", false, "print usage help")
-	flag.BoolVar(&args.Help, "h", false, "print usage help")
+	flag.BoolVar(&args.Help, "h", false, "print usage help"+shorthand)
 
 	flag.Parse()
 
