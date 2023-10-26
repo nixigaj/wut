@@ -25,14 +25,14 @@ Transfer/sec:      2.29MB
 Running 10s test @ https://ip.erix.dev:11313
   8 threads and 100 connections
   Thread Stats   Avg      Stdev     Max   +/- Stdev
-    Latency    18.20ms   22.64ms 389.65ms   98.11%
-    Req/Sec   764.16     82.61     1.14k    91.75%
-  60168 requests in 10.01s, 7.52MB read
-Requests/sec:   6013.30
-Transfer/sec:    769.28KB
+    Latency    16.62ms   14.36ms 340.39ms   98.93%
+    Req/Sec   767.31     75.78     1.04k    94.82%
+  60675 requests in 10.01s, 7.58MB read
+Requests/sec:   6063.34
+Transfer/sec:    775.68KB
 ```
 
-That is about than 11% faster.
+That is about than 12% faster.
 
 `what` server has a lower transfer/sec, even though it has a higher requests/sec, because it sends less stuff in the response headers per request. By artificially inflating the response size with junk to match Nginx, you can still have higher requests/sec:
 ```
