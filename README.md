@@ -29,9 +29,14 @@ it can be downloaded for the applicable platform from the [releases page](https:
 and run from anywhere.
 To install it automatically to the command-line path, the command below can be run with elevated privileges.
 
-Darwin (macOS), FreeBSD, and Linux:
+Darwin (macOS) and Linux:
 ```shell
 curl -sSL https://raw.githubusercontent.com/nixigaj/what/master/install.sh | sh
+```
+
+FreeBSD
+```shell
+fetch -o - https://raw.githubusercontent.com/nixigaj/what/master/install.sh | sh
 ```
 
 Windows:
