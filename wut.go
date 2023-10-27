@@ -24,7 +24,7 @@ var defaultAPIs = []string{
 }
 
 const (
-	whatVersion = "0.1.0"
+	wutVersion = "0.1.0"
 
 	// With multiple APIs, it is unlikely that the query will take longer than three seconds
 	defaultClientTimeoutSec = 3
@@ -75,7 +75,7 @@ func main() {
 	}
 
 	if opt.PrintVer {
-		fmt.Println("`what` version " + whatVersion)
+		fmt.Println("`wut` version " + wutVersion)
 		os.Exit(0)
 	}
 
@@ -137,26 +137,25 @@ type flags struct {
 func getOptions() (options, error) {
 	args := flags{}
 
-	const shorthand = " (shorthand)"
 	flag.BoolVar(&args.V4, "ipv4", false, "use IPv4")
-	flag.BoolVar(&args.V4, "4", false, "use IPv4"+shorthand)
+	flag.BoolVar(&args.V4, "4", false, "use IPv4 (shorthand)")
 	flag.BoolVar(&args.V6, "ipv6", false, "use IPv6")
-	flag.BoolVar(&args.V6, "6", false, "use IPv6"+shorthand)
+	flag.BoolVar(&args.V6, "6", false, "use IPv6 (shorthand)")
 	flag.BoolVar(&args.Both, "both", false, "use both IPv4 and IPv6")
-	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6"+shorthand)
+	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6 (shorthand)")
 	flag.Var(&args.Short, "short", "address or interface to bind to")
-	flag.Var(&args.Short, "s", "address or interface to bind to"+shorthand)
+	flag.Var(&args.Short, "s", "address or interface to bind to (shorthand)")
 	flag.Var(&args.Bind, "interface", "address or interface to bind to")
-	flag.Var(&args.Bind, "i", "address or interface to bind to"+shorthand)
+	flag.Var(&args.Bind, "i", "address or interface to bind to (shorthand)")
 	flag.Var(&args.APIs, "api", "provide an API to bind to (can be used multiple times)")
-	flag.Var(&args.APIs, "a", "provide an API to bind to (can be used multiple times)"+shorthand)
+	flag.Var(&args.APIs, "a", "provide an API to bind to (can be used multiple times) (shorthand)")
 	flag.Var(&args.Timeout, "timeout", "provide a API fetch timeout in seconds")
-	flag.Var(&args.Timeout, "t", "provide a API fetch timeout in seconds"+shorthand)
+	flag.Var(&args.Timeout, "t", "provide a API fetch timeout in seconds (shorthand)")
 	flag.BoolVar(&args.Verbose, "verbose", false, "print full error output")
-	flag.BoolVar(&args.Version, "version", false, "print `what` version")
-	flag.BoolVar(&args.Version, "v", false, "print `what` version"+shorthand)
+	flag.BoolVar(&args.Version, "version", false, "print `wut` version")
+	flag.BoolVar(&args.Version, "v", false, "print `wut` version (shorthand)")
 	flag.BoolVar(&args.Help, "help", false, "print usage help")
-	flag.BoolVar(&args.Help, "h", false, "print usage help"+shorthand)
+	flag.BoolVar(&args.Help, "h", false, "print usage help (shorthand)")
 
 	flag.Parse()
 
@@ -238,7 +237,7 @@ func getOptions() (options, error) {
 	}
 
 	if opt.BindType.IP == ipUnset && !args.Both {
-		switch os.Getenv("WHAT_DEFAULT_IP_VERSION") {
+		switch os.Getenv("WUT_DEFAULT_IP_VERSION") {
 		case "ipv4", "4":
 			opt.BindType.IP = ipv4
 		case "ipv6", "6":

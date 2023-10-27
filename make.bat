@@ -14,19 +14,19 @@ echo Usage: .\make.bat [build^|build-debug^|run^|clean^|install]
 goto :eof
 
 :build
-	go build -ldflags="-s -w" -o what.exe
+	go build -ldflags="-s -w" -o wut.exe
 	goto :eof
 
 :build-debug
-	go build -o what.exe
+	go build -o wut.exe
 	goto :eof
 
 :run
-	.\what.exe
+	.\wut.exe
 	goto :eof
 
 :clean
-	del what.exe
+	del wut.exe
 	goto :eof
 
 :install

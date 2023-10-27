@@ -1,4 +1,4 @@
-# `what` server
+# `wut` server
 This is a super simple HTTP(/2) server written in Rust,
 made for one thing, and one thing only: securely echoing your public IP-address as fast as possible.
 I use it for [ip.erix.dev:11313](http://ip.erix.dev:11313).
@@ -20,7 +20,7 @@ Requests/sec:   5396.95
 Transfer/sec:      2.29MB
 ```
 
-### `what` server
+### `wut` server
 ```
 Running 10s test @ https://ip.erix.dev:11313
   8 threads and 100 connections
@@ -34,7 +34,7 @@ Transfer/sec:    775.68KB
 
 That is about than 12% faster.
 
-`what` server has a lower transfer/sec, even though it has a higher requests/sec, because it sends less stuff in the response headers per request. By artificially inflating the response size with junk to match Nginx, you can still have higher requests/sec:
+`wut` server has a lower transfer/sec, even though it has a higher requests/sec, because it sends less stuff in the response headers per request. By artificially inflating the response size with junk to match Nginx, you can still have higher requests/sec:
 ```
 Running 10s test @ https://ip.erix.dev:11313
   8 threads and 100 connections

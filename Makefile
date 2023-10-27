@@ -3,16 +3,16 @@
 default: build-debug
 
 build:
-	go build -ldflags="-s -w" -o what
+	go build -ldflags="-s -w" -o wut
 
 build-debug:
-	go build -o what
+	go build -o wut
 
 run:
-	@./what
+	@./wut
 
 clean:
-	@rm what
+	@rm wut
 
 install:
 	@./install.sh

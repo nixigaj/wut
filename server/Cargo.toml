@@ -1,9 +1,9 @@
 [package]
-name = "what-server"
+name = "wut-server"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/nixigaj/what"
+repository = "https://github.com/nixigaj/wut"
 
 [dependencies]
 axum = "0.6.20"

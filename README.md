@@ -1,6 +1,6 @@
 <img align="left" alt="" src="icon.svg" height="128" style="margin-right: 1rem"/>
 
-# `what`
+# `wut`
 A fast and simple command-line tool to check your public IP-address.
 It can also double as a network connectivity checker.
 
@@ -14,7 +14,7 @@ It can also double as a network connectivity checker.
 ## Features / Usage
 - **Fast** — Quires multiple different APIs at once and returns the first response while discarding the others.
 - **Simple** — Does one thing and does it well, with a minimal number of options, in a single source file, using only the Go standard library.
-- **IPv4 and IPv6** — Prints both by default but can print only one with the `--ipv4`/`-4` and `--ipv6`/`-6` flags. The default behaviour can be changed to a specific version by setting the `WHAT_DEFAULT_IP_VERSION` environment variable to `ipv4`/`4` or `ipv6`/`6`. To print both versions with the environment variable set use the `--both` or `-b` flag.
+- **IPv4 and IPv6** — Prints both by default but can print only one with the `--ipv4`/`-4` and `--ipv6`/`-6` flags. The default behaviour can be changed to a specific version by setting the `WUT_DEFAULT_IP_VERSION` environment variable to `ipv4`/`4` or `ipv6`/`6`. To print both versions with the environment variable set use the `--both` or `-b` flag.
 - **Short output** — Does a pretty print by default but can print only an address with no white-space using the `--short [ipv4/ipv6]` or `-s [4/6]` flag.
 - **Specify interface or local IP** — Use a specific interface name or local IP by passing the `--interface` or `-i` flag. If an interface name is specified the first IPv4 and/or IPv6 will be chosen local IP(s).
 - **Custom API** — One or more custom HTTP API address(es) can be supplied with one or more `--api` or `-a` flag(s). This expects that the API responds with only the IP-address in plaintext, as only white-space is trimmed from the response. It should also support both IPv4 and IPv6 for full functionality. Unencrypted HTTP is used by default unless a protocol is specified, e.g. `https://`.
@@ -24,24 +24,24 @@ It can also double as a network connectivity checker.
 - **Print usage** — Print program usage instructions with the `--help` or `-h` flag.
 
 ## Install
-Since `what` is a standalone binary,
-it can be downloaded for the applicable platform from the [releases page](https://github.com/nixigaj/what/releases)
+Since `wut` is a standalone binary,
+it can be downloaded for the applicable platform from the [releases page](https://github.com/nixigaj/wut/releases)
 and run from anywhere.
 To install it automatically to the command-line path, the command below can be run with elevated privileges.
 
 Darwin (macOS) and Linux:
 ```shell
-curl -sSL https://raw.githubusercontent.com/nixigaj/what/master/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/nixigaj/wut/master/install.sh | sh
 ```
 
 FreeBSD
 ```shell
-fetch -o - https://raw.githubusercontent.com/nixigaj/what/master/install.sh | sh
+fetch -o - https://raw.githubusercontent.com/nixigaj/wut/master/install.sh | sh
 ```
 
 Windows:
 ```powershell
-curl -s https://raw.githubusercontent.com/nixigaj/what/master/install.bat | cmd
+curl -s https://raw.githubusercontent.com/nixigaj/wut/master/install.bat | cmd
 ```
 
 Prebuilt binaries are available for:
@@ -64,8 +64,8 @@ If your platform is not in the table, you can try building it from source below.
 #### Clone repository and enter it
 
 ```shell
-git clone https://github.com/nixigaj/what.git
-cd what
+git clone https://github.com/nixigaj/wut.git
+cd wut
 ```
 
 #### Build
@@ -86,7 +86,7 @@ On Windows `make` can be replaced with `.\make.bat` in the commands.
 
 ## APIs
 
-By default `what` uses:
+By default `wut` uses:
 
 - [api64.ipify.org](https://api64.ipify.org)
 - [icanhazip.com](https://icanhazip.com) ([this one is usually the first to respond](https://blog.apnic.net/2021/06/17/how-a-small-free-ip-tool-survived/))

@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 
 install_from_build() {
-	if [ ! -e ./what ]; then
+	if [ ! -e ./wut ]; then
         echo "Binary is not built, please run \"make\" first"
         exit 1
     fi
-	cp ./what /bin/what
+	cp ./wut /bin/wut
 	echo "Install from build successful"
 }
 
@@ -23,7 +23,7 @@ fi
 cd "${0%/*}" || exit 1
 
 # Determine if inside repository or run from the internet
-if [ -e ./what.go ]; then
+if [ -e ./wut.go ]; then
     install_from_build
 else
     install_from_download
