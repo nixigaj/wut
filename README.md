@@ -1,3 +1,5 @@
+# Note: this software is not ready yet...
+
 <img align="left" alt="" src="icon.svg" height="128" style="margin-right: 1rem"/>
 
 # `wut`
