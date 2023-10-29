@@ -1,3 +1,5 @@
+# Note: this software is not ready yet...
+
 <img align="left" alt="" src="icon.svg" height="128" style="margin-right: 1rem"/>
 
 # `wut`
@@ -51,7 +53,7 @@ Prebuilt binaries are available for:
 | Darwin (macOS) |       | ✅       |       | ✅       |
 | FreeBSD        | ✅     | ✅       | ✅     | ✅       |
 | Linux          | ✅     | ✅       | ✅     | ✅       |
-| Windows        | ✅     | ✅       |       | ✅       |
+| Windows        | ✅     | ✅       | ✅     | ✅       |
 
 If your platform is not in the table, you can try building it from source below.
 
