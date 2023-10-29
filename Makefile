@@ -15,4 +15,11 @@ clean:
 	@rm wut
 
 install:
-	@./install.sh
+	@if [ $$(id -u) -ne 0 ]; then \
+		echo "Install failed: Install script not run as root." && exit 1; \
+	fi
+	@if [ ! -e ./wut ]; then \
+		echo "Binary is not built, please run \`make build\` first" && exit 1; \
+	fi
+	cp ./wut /usr/local/bin/wut
+	@echo "Install from build successful"

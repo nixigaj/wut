@@ -30,5 +30,6 @@ goto :eof
 	goto :eof
 
 :install
-	.\install.bat
+	REM TODO: Write Windows installation script.
+	echo TODO: Write Windows installation script
 	goto :eof
