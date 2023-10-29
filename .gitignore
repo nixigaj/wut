@@ -5,3 +5,6 @@
 # Executables
 wut
 wut.exe
+
+# GitHub release build
+release/
