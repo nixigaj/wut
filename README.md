@@ -51,7 +51,7 @@ Prebuilt binaries are available for:
 | Darwin (macOS) |       | ✅       |       | ✅       |
 | FreeBSD        | ✅     | ✅       | ✅     | ✅       |
 | Linux          | ✅     | ✅       | ✅     | ✅       |
-| Windows        | ✅     | ✅       |       | ✅       |
+| Windows        | ✅     | ✅       | ✅     | ✅       |
 
 If your platform is not in the table, you can try building it from source below.
 
