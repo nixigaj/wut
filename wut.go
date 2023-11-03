@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-var defaultAPIs = []string{
+var defaultAPIs = [...]string{
 	"https://api64.ipify.org",
 	"https://icanhazip.com",
 	"https://ifconfig.me/ip",
@@ -24,7 +24,8 @@ var defaultAPIs = []string{
 }
 
 const (
-	wutVersion = "0.1.0"
+	// This can be set at build time with the `WUT_VERSION` environment variable
+	wutVersion = "git"
 
 	// With multiple APIs, it is unlikely that the query will take longer than three seconds
 	defaultClientTimeoutSec = 3
@@ -220,7 +221,7 @@ func getOptions() (options, error) {
 		}
 		opt.APIs = args.APIs
 	} else {
-		opt.APIs = defaultAPIs
+		opt.APIs = defaultAPIs[:]
 	}
 
 	if args.Timeout.String() != "" {

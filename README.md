@@ -43,7 +43,7 @@ fetch -o - https://raw.githubusercontent.com/nixigaj/wut/master/install.sh | sh
 
 Windows:
 ```powershell
-curl -s https://raw.githubusercontent.com/nixigaj/wut/master/install.bat | cmd
+powershell -Command "(Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/nixigaj/wut/master/install.bat' -UseBasicParsing).Content | cmd"
 ```
 
 Prebuilt binaries are available for:

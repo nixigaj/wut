@@ -2,11 +2,15 @@
 
 default: build-debug
 
+ifndef WUT_VERSION
+	WUT_VERSION := "git"
+endif
+
 build:
-	go build -ldflags="-s -w" -o wut
+	@go build -ldflags="-s -w" -o wut
 
 build-debug:
-	go build -o wut
+	@go build -o wut
 
 run:
 	@./wut
@@ -16,7 +20,7 @@ clean:
 
 install:
 	@if [ $$(id -u) -ne 0 ]; then \
-		echo "Install failed: Install script not run as root." && exit 1; \
+		echo "Install failed: install not run as root." && exit 1; \
 	fi
 	@if [ ! -e ./wut ]; then \
 		echo "Binary is not built, please run \`make build\` first" && exit 1; \
@@ -25,6 +29,10 @@ install:
 	@echo "Install from build successful"
 
 github-release-build:
+	@if [ "$(WUT_VERSION)" = "git" ]; then \
+		echo "WUT_VERSION environment variable needs to be set to a specific version" && exit 1; \
+	fi
+
 	@mkdir -p release
 
 	@env GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o wut

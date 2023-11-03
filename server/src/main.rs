@@ -1,11 +1,21 @@
-use axum::{extract::ConnectInfo, routing::get, Router};
+#[macro_use] extern crate log;
+
+use axum::{extract::ConnectInfo, routing::get, Router, extract::State};
 use axum_server::tls_rustls::{RustlsConfig};
-use clap::Parser;
+use clap::{arg, Parser};
 use std::{
+	env,
 	io::Error,
 	net::{Ipv4Addr, Ipv6Addr, SocketAddr},
-	path::PathBuf
+	path::PathBuf,
+	sync::{
+		atomic::{AtomicU64, Ordering},
+		Arc
+	},
 };
+use std::env::VarError;
+use tokio::time::{self, Duration, Instant};
+
 
 /// A HTTP server that echoes your remote IP-address
 #[derive(Parser, Debug)]
@@ -29,12 +39,30 @@ struct Args {
 
 	/// Key file path
 	#[arg(short, long)]
-	key_path: String
+	key_path: String,
+
+	/// Log interval in seconds
+	#[arg(short = 'i', long = "interval", default_value_t = 60)]
+	log_interval: u64,
+}
+
+#[derive(Clone)]
+struct ServerConfig {
+	req_counter: Arc<AtomicU64>,
 }
 
 //noinspection DuplicatedCode
 #[tokio::main]
 async fn main() {
+	match env::var("RUST_LOG") {
+		Err(_) => {
+			env::set_var("RUST_LOG", "info");
+		}
+		Ok(_) => {}
+	}
+
+	env_logger::init();
+
 	let args = Args::parse();
 
 	// Configure certificate and private key used by HTTPS
@@ -57,10 +85,18 @@ async fn main() {
 	})
 		.collect();
 
-	let app = Router::new().route("/", get(handler));
+	let req_counter = AtomicU64::new(0);
+	let req_counter_arc = Arc::new(req_counter);
+	let server_config = ServerConfig{
+		req_counter: req_counter_arc.clone(),
+	};
+
+	let app = Router::new()
+		.route("/", get(handler))
+		.with_state(server_config);
 
 	// Run HTTPS server
-	println!("listening on port {}", args.port);
+	info!("listening on port {}", args.port);
 
 	let server_handles_v4: Vec<tokio::task::JoinHandle<Result<(), Error>>> = sockets_v4
 		.iter()
@@ -86,6 +122,26 @@ async fn main() {
 		})
 		.collect();
 
+	let start_time = Instant::now();
+	let mut prev_elapsed_time = Duration::new(0,0);
+	let mut prev_total_requests = 0;
+	let mut interval = time::interval(Duration::from_secs(args.log_interval));
+	interval.tick().await;
+	loop {
+		interval.tick().await;
+		let total_requests = req_counter_arc.load(Ordering::Relaxed);
+		let total_requests_diff = total_requests - prev_total_requests;
+		let elapsed_time = start_time.elapsed() - prev_elapsed_time;
+		let rps = total_requests_diff as f64 / elapsed_time.as_secs() as f64;
+		let rps_tot = total_requests as f64 / start_time.elapsed().as_secs() as f64;
+
+		info!("\nRequests per second: {:.2}\nTotal requests per second: {:.2}\nTotal requests: {}",
+			rps, rps_tot, total_requests);
+
+		prev_elapsed_time = elapsed_time;
+		prev_total_requests = total_requests;
+	}
+
 	for handle_v4 in server_handles_v4 {
 		handle_v4
 			.await
@@ -101,6 +157,12 @@ async fn main() {
 	}
 }
 
-async fn handler(ConnectInfo(addr): ConnectInfo<SocketAddr>) -> String {
+async fn handler(
+	ConnectInfo(addr): ConnectInfo<SocketAddr>,
+	State(server_config): State<ServerConfig>
+) -> String {
+	// Increment the request counter
+	server_config.req_counter.fetch_add(1, Ordering::SeqCst);
+
 	format!("{}", addr.ip())
 }
