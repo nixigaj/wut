@@ -15,21 +15,21 @@ import (
 	"time"
 )
 
-var defaultAPIs = [...]string{
-	"https://api64.ipify.org",
-	"https://icanhazip.com",
-	"https://ifconfig.me/ip",
-	"https://ip.erix.dev:11313",
-	"https://ipecho.net/plain",
-}
-
-const (
+var (
 	// This can be set at build time with the `WUT_VERSION` environment variable
 	wutVersion = "git"
 
-	// With multiple APIs, it is unlikely that the query will take longer than three seconds
-	defaultClientTimeoutSec = 3
+	defaultAPIs = [...]string{
+		"https://api64.ipify.org",
+		"https://icanhazip.com",
+		"https://ifconfig.me/ip",
+		"https://ip.erix.dev:11313",
+		"https://ipecho.net/plain",
+	}
 )
+
+// With multiple APIs, it is unlikely that the query will take longer than three seconds
+const defaultClientTimeoutSec = 3
 
 type ipType int
 
@@ -54,7 +54,7 @@ type ipStringResp struct {
 type options struct {
 	Bind       string
 	BindType   bindType
-	Short      ipType
+	Short      bool
 	VerboseErr bool
 	APIs       []string
 	Timeout    time.Duration
@@ -80,7 +80,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if opt.Short != ipUnset {
+	if opt.Short {
 		out, _ := getSingleOutput(opt.BindType, opt.Bind, opt.APIs, opt.VerboseErr, opt.Timeout)
 		fmt.Print(out)
 	} else {
@@ -90,8 +90,6 @@ func main() {
 
 	os.Exit(0)
 }
-
-// Flag parsing ↓
 
 type singleFlag string
 
@@ -144,8 +142,8 @@ func getOptions() (options, error) {
 	flag.BoolVar(&args.V6, "6", false, "use IPv6 (shorthand)")
 	flag.BoolVar(&args.Both, "both", false, "use both IPv4 and IPv6")
 	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6 (shorthand)")
-	flag.Var(&args.Short, "short", "address or interface to bind to")
-	flag.Var(&args.Short, "s", "address or interface to bind to (shorthand)")
+	flag.Var(&args.Short, "short", "print short output with provided IP version")
+	flag.Var(&args.Short, "s", "print short output with provided IP version (shorthand)")
 	flag.Var(&args.Bind, "interface", "address or interface to bind to")
 	flag.Var(&args.Bind, "i", "address or interface to bind to (shorthand)")
 	flag.Var(&args.APIs, "api", "provide an API to bind to (can be used multiple times)")
@@ -167,7 +165,7 @@ func getOptions() (options, error) {
 	opt := options{
 		Bind:       args.Bind.String(),
 		BindType:   getBindType(args.Bind.String()),
-		Short:      ipUnset,
+		Short:      false,
 		VerboseErr: args.Verbose,
 		PrintVer:   args.Version,
 		PrintUsage: args.Help,
@@ -196,13 +194,15 @@ func getOptions() (options, error) {
 		if opt.BindType.IP == ipv6 {
 			return options{}, fmt.Errorf("conflicting IP versions")
 		}
-		opt.Short = ipv4
+		opt.Short = true
+		opt.BindType.IP = ipv4
 		ipConflictCount++
 	case "ipv6", "6":
 		if opt.BindType.IP == ipv4 {
 			return options{}, fmt.Errorf("conflicting IP versions")
 		}
-		opt.Short = ipv6
+		opt.Short = true
+		opt.BindType.IP = ipv6
 		ipConflictCount++
 	case "":
 		break
@@ -248,8 +248,6 @@ func getOptions() (options, error) {
 
 	return opt, nil
 }
-
-// ↑
 
 func getBindType(str string) bindType {
 	if str == "" {
@@ -571,7 +569,7 @@ func getInterfaceIP(bType bindType, ifaceName string) (string, error) {
 	}
 
 	return "", errors.New(
-		fmt.Sprintf("interface %s does not have an %s address\n", ifaceName, getIPTypeStr(bType)))
+		fmt.Sprintf("interface %s does not have an %s address", ifaceName, getIPTypeStr(bType)))
 }
 
 func trimSubnet(ipStr string) string {
@@ -595,7 +593,8 @@ func fetchIP(respChan chan ipStringResp, client *http.Client, ctx context.Contex
 	resp, err := client.Do(req)
 	queryTime := time.Since(queryStartTime)
 	if err != nil {
-		netErr, ok := err.(net.Error)
+		var netErr net.Error
+		ok := errors.As(err, &netErr)
 		respChan <- ipStringResp{
 			IP:        "",
 			QueryTime: queryTime,
