@@ -124,7 +124,7 @@ type flags struct {
 	V4      bool
 	V6      bool
 	Both    bool
-	Short   singleFlag
+	Short   bool
 	Bind    singleFlag
 	APIs    sliceFlag
 	Timeout singleFlag
@@ -142,8 +142,8 @@ func getOptions() (options, error) {
 	flag.BoolVar(&args.V6, "6", false, "use IPv6 (shorthand)")
 	flag.BoolVar(&args.Both, "both", false, "use both IPv4 and IPv6")
 	flag.BoolVar(&args.Both, "b", false, "use both IPv4 and IPv6 (shorthand)")
-	flag.Var(&args.Short, "short", "print short output with provided IP version")
-	flag.Var(&args.Short, "s", "print short output with provided IP version (shorthand)")
+	flag.BoolVar(&args.Short, "short", false, "print short output with specified IP version")
+	flag.BoolVar(&args.Short, "s", false, "print short output with specified IP version (shorthand)")
 	flag.Var(&args.Bind, "interface", "address or interface to bind to")
 	flag.Var(&args.Bind, "i", "address or interface to bind to (shorthand)")
 	flag.Var(&args.APIs, "api", "provide an API to bind to (can be used multiple times)")
@@ -165,7 +165,7 @@ func getOptions() (options, error) {
 	opt := options{
 		Bind:       args.Bind.String(),
 		BindType:   getBindType(args.Bind.String()),
-		Short:      false,
+		Short:      args.Short,
 		VerboseErr: args.Verbose,
 		PrintVer:   args.Version,
 		PrintUsage: args.Help,
@@ -189,28 +189,21 @@ func getOptions() (options, error) {
 	if args.Both {
 		ipConflictCount++
 	}
-	switch args.Short {
-	case "ipv4", "4":
-		if opt.BindType.IP == ipv6 {
-			return options{}, fmt.Errorf("conflicting IP versions")
-		}
-		opt.Short = true
-		opt.BindType.IP = ipv4
-		ipConflictCount++
-	case "ipv6", "6":
-		if opt.BindType.IP == ipv4 {
-			return options{}, fmt.Errorf("conflicting IP versions")
-		}
-		opt.Short = true
-		opt.BindType.IP = ipv6
-		ipConflictCount++
-	case "":
-		break
-	default:
-		return options{}, fmt.Errorf("`short` option requires argument of `ipv4`/`4`/`ipv6`/`6`")
-	}
 	if ipConflictCount > 0 {
 		return options{}, fmt.Errorf("conflicting IP versions")
+	}
+
+	if opt.BindType.IP == ipUnset && !args.Both {
+		switch os.Getenv("WUT_DEFAULT_IP_VERSION") {
+		case "ipv4", "4":
+			opt.BindType.IP = ipv4
+		case "ipv6", "6":
+			opt.BindType.IP = ipv6
+		}
+	}
+
+	if args.Short && opt.BindType.IP == ipUnset {
+		return options{}, fmt.Errorf("short output option also requires IP version to be specified")
 	}
 
 	if len(args.APIs.Strings()) > 0 {
@@ -235,15 +228,6 @@ func getOptions() (options, error) {
 		opt.Timeout = time.Duration(timeout) * time.Second
 	} else {
 		opt.Timeout = defaultClientTimeoutSec * time.Second
-	}
-
-	if opt.BindType.IP == ipUnset && !args.Both {
-		switch os.Getenv("WUT_DEFAULT_IP_VERSION") {
-		case "ipv4", "4":
-			opt.BindType.IP = ipv4
-		case "ipv6", "6":
-			opt.BindType.IP = ipv6
-		}
 	}
 
 	return opt, nil
