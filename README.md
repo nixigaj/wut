@@ -93,7 +93,7 @@ By default `wut` uses:
 - [api64.ipify.org](https://api64.ipify.org)
 - [icanhazip.com](https://icanhazip.com) ([this one is usually the first to respond](https://blog.apnic.net/2021/06/17/how-a-small-free-ip-tool-survived/))
 - [ifconfig.me/ip](https://ifconfig.me/ip)
-- [ip.erix.dev:11313](https://ip.erix.dev:11313) ([my own service](server) in Sweden)
+- [ip.erix.dev:11313](https://ip.erix.dev:11313) ([my own service](https://github.com/nixigaj/wut-server) in Sweden)
 - [ipecho.net/plain](https://ipecho.net/plain)
 
 ### Roll your own API with Nginx
