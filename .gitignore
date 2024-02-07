@@ -1,0 +1,10 @@
+# Editors
+.idea/
+.vscode/
+
+# Executables
+wut
+wut.exe
+
+# GitHub release build
+release/
